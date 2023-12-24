@@ -1,11 +1,11 @@
 from core.library import api
-from ..models import mistral
+from ..models import llama2, mistral, webGPT
 
 
 def query(req, *args, **kwargs):
   try:
-    user_input = api.get_json(req)['prompt']
-    dexter_response = mistral.prompt(user_input).strip()
-    return api.data(dexter_response)
+    prompt = api.get_json(req)['prompt']
+    response = webGPT.input(prompt).strip()
+    return api.data(response)
   except Exception as exception:
     return api.error(exception)
