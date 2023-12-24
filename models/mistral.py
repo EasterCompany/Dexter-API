@@ -1,8 +1,12 @@
 from langchain.llms import Ollama
 
 model_server = "http://127.0.0.1:11434"
-fp16_version = "mistral:7b-instruct-v0.2-fp16"
+models = {
+  'latest': 'mistral',
+  'instruct-fp16': 'mistral:7b-instruct-v0.2-fp16'
+}
+
 input = Ollama(
   base_url=model_server,
-  model=fp16_version
+  model=models['latest']
 )
