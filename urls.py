@@ -1,8 +1,14 @@
 from . import API
-from .endpoints import chat
+from .endpoints import prompt
 
 API.path(
-  "chat/query",
-  chat.query,
-  "General purpose prompt endpoint"
+  "prompt",
+  prompt.create_new_prompt_process,
+  "Creates a prompt process and returns id for streaming process status"
+)
+
+API.socket(
+  "prompt",
+  prompt.PromptProcessesConsumer,
+  "Streams prompt process status & data back to the user client"
 )
