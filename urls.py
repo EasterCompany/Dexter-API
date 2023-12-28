@@ -1,5 +1,5 @@
 from . import API
-from .endpoints import prompt
+from .endpoints import prompt, processor
 
 API.path(
   "prompt",
@@ -11,4 +11,10 @@ API.socket(
   "prompt",
   prompt.PromptProcessesConsumer,
   "Streams prompt process status & data back to the user client"
+)
+
+API.socket(
+  "processor",
+  processor.ProcessorConsumer,
+  "Streams prompt to the processor and receives responses"
 )

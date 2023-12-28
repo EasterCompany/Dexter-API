@@ -41,6 +41,6 @@ class PromptsModel(models.Model):
     blank=True
   )
   processor = models.CharField(
-    null=True,
-    blank=True
+    default="",
+    max_length=64
   )

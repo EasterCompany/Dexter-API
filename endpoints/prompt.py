@@ -50,7 +50,7 @@ class PromptProcessesConsumer(AsyncJsonWebsocketConsumer):
   async def update_prompt_status_periodically(self, *args, **kwargs):
     while self.keep_alive:
       await self.update_prompt_status()
-      await asyncio.sleep(1)
+      await asyncio.sleep(0.25)
 
   async def update_prompt_status(self, *args, **kwargs):
     prompt_object = await self.get_prompt_object()
@@ -61,7 +61,7 @@ class PromptProcessesConsumer(AsyncJsonWebsocketConsumer):
     await self.send_json(
       content={
         'status': self.current_status,
-        'response': prompt_object.response
+        'response': prompt_object.response if prompt_object.status == 'finished' else None
       }
     )
 
