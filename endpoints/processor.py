@@ -22,14 +22,16 @@ class ProcessorConsumer(AsyncJsonWebsocketConsumer):
     self.undesignated_processes()
 
   async def send_json(self, content, close=False):
-    print(f"Sending: {content}")
+    print(f"\nSending: {content}\n")
     await super().send(text_data=await self.encode_json(content), close=close)
 
   async def receive(self, text_data=None, bytes_data=None):
-    print(f"Receiving: {text_data} {bytes_data}")
+    print(f"\nReceiving: {text_data} {bytes_data}\n")
+    super().receive()
 
   async def receive_json(self, content):
-    print(f"Receiving: {content}")
+    print(f"\nReceiving: {content}\n")
+    super().receive_json()
 
   async def scan_records_periodically(self, *args, **kwargs):
     while True:
