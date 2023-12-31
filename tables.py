@@ -18,8 +18,7 @@ class PromptsModel(models.Model):
   )
   prompt = models.TextField(
     null=False,
-    blank=False,
-    max_length=300
+    blank=False
   )
   response = models.TextField(
     null=True,

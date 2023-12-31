@@ -1,40 +1,72 @@
 import json
 import secrets
+import requests
 import websocket
+import threading
+from uuid import uuid4
+from models import mistral
 
-client_id = secrets.token_urlsafe(16)
-server_adr = f"ws://127.0.0.1:8995"
+worker_uid = (secrets.token_urlsafe(16) + str(uuid4())).replace('-', '')
+server_adr = f"localhost:8995"
 #server_adr = f"wss://dexter.easter.company"
+server_socket_url = lambda ssl_enabled=False, uri_path='': f"wss://{server_adr}{uri_path}" if ssl_enabled else \
+  f"ws://{server_adr}{uri_path}"
+server_request_url = lambda ssl_enabled=False, uri_path='': f"https://{server_adr}{uri_path}" if ssl_enabled else \
+  f"http://{server_adr}{uri_path}"
 
 
-def on_message(ws, message):
+def on_error(ws:object, error:str) -> None:
+  print(f"Socket Error Occurred: {error}")
+
+
+def on_close(ws:object, close_status_code:int, close_msg:str) -> None:
+  print(f"Socket Connection closed: {close_msg}")
+
+
+def on_message(ws, message) -> None:
   data = json.loads(message)
-  resp = json.dumps({
-    "uuid": data["uuid"],
-    "response": f"Hello, user! from {client_id}.",
-    "processor": client_id
-  }).encode("utf-8")
-  ws.send_bytes(data=resp)
+  thread = threading.Thread(
+    target=generate_prompt_response,
+    name=f"prompt-processor-{data['uuid']}",
+    args=(
+      data['uuid'],
+      data['prompt']
+    )
+  )
+  thread.daemon = False
+  thread.start()
 
 
-def on_error(ws, error):
-  print(f"Error occurred: {error}")
-
-
-def on_close(ws, close_status_code, close_msg):
-  print(f"[{close_status_code}] Connection closed: {close_msg}")
+def generate_prompt_response(prompt_uuid:str, prompt_message:str) -> str:
+  requests.get(
+    url=server_request_url(
+      ssl_enabled=False,
+      uri_path=f"/api/dexter/processor/response?clientId={worker_uid}"
+    ),
+    headers={
+      'Content-Type': 'application/json'
+    },
+    data=json.dumps({
+      "prompt": prompt_uuid,
+      "response": mistral.prompt(prompt_message),
+      "processor": worker_uid
+    }).encode("utf-8")
+  )
 
 
 if __name__ == "__main__":
   websocket.enableTrace(True)
   socket = websocket.WebSocketApp(
-    f"{server_adr}/api/ws/dexter/processor?clientId={client_id}",
+    url=server_socket_url(
+      ssl_enabled=False,
+      uri_path=f"/api/ws/dexter/processor?clientId={worker_uid}"
+    ),
     on_error=on_error,
     on_close=on_close,
     on_message=on_message
   )
   socket.run_forever(
-    reconnect=1,
+    reconnect=3,
     origin="http://localhost:19006",
-    host="http://localhost:8995"
+    host=server_request_url(ssl_enabled=False)
   )

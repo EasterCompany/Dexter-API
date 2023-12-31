@@ -1,5 +1,6 @@
 from ..tables import PromptsModel
 from core.library import (
+  api,
   time,
   asyncio,
   parse_qsl,
@@ -8,26 +9,39 @@ from core.library import (
 )
 
 
+def response_handler(req, *args, **kwargs):
+  try:
+    data = api.get_json(req)
+    process = PromptsModel.objects.get(
+      uuid=data['prompt'],
+      processor=data['processor']
+    )
+    process.status = "finished"
+    process.response = data['response']
+    process.finished = time.now()
+    process.save()
+    return api.success()
+  except Exception as exception:
+    return api.error(exception)
+
+
 class ProcessorConsumer(AsyncJsonWebsocketConsumer):
 
   async def connect(self, *args, **kwargs):
-    await self.accept()
     self.query_params = dict(parse_qsl(self.scope['query_string'].decode('utf-8')))
     self.processor_id = self.query_params['clientId']
-    print(f"\nConnected to processor: {self.processor_id[:24]}...\n")
+    print(f"\nConnecting Processor: {self.processor_id[:16]}...\n")
+    await self.accept()
     await self.scan_records_periodically()
 
   def websocket_disconnect(self, message):
-    print(f"\nDisconnected from processor: {self.processor_id[:24]}...\n")
+    print(f"\nDisconnecting Processor: {self.processor_id[:16]}...\n")
     self.undesignated_processes()
+    self.close()
 
   async def send_json(self, content, close=False):
     print(f"\nSending: {content}\n")
     await super().send(text_data=await self.encode_json(content), close=close)
-
-  async def receive(self, text_data=None, bytes_data=None):
-    print(f"\nReceiving: {text_data} {bytes_data}\n")
-    super().receive()
 
   async def receive_json(self, content):
     print(f"\nReceiving: {content}\n")
