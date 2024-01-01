@@ -1,5 +1,11 @@
 from . import API
-from .endpoints import prompt, processor
+from .endpoints import processor, prompt, transcribe
+
+API.path(
+  "transcribe",
+  transcribe.transcribe_audio,
+  "Creates a string from an audio file"
+)
 
 API.path(
   "prompt",

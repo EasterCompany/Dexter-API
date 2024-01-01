@@ -1,6 +1,6 @@
 import time
 from langchain.llms import Ollama
-from contexts.dexter import context
+from .contexts.dexter import context
 
 
 class LanguageProcessor():
@@ -13,7 +13,7 @@ class LanguageProcessor():
     'small': 'mixtral:latest'
   }
 
-  def __init__(self, model:str='tiny') -> None:
+  def __init__(self, model:str='base') -> None:
     self.active_model = self.models[model]
     self.model = Ollama(
       base_url=self.model_server,
@@ -30,7 +30,7 @@ class LanguageProcessor():
 
 
 if __name__ == '__main__':
-  engine = LanguageProcessor(model='tiny')
+  engine = LanguageProcessor(model='base')
   prompt = "Hello, who are you and what do you do?"
   print(f"Sending prompt '{prompt}'")
   t0 = time.time()

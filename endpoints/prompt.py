@@ -13,10 +13,12 @@ def create_new_prompt_process(req, *args, **kwargs):
     user = api.get_user(req)
     if user is None:
       return api.fail("Failed to authenticate user.")
+
     messages = api.get_json(req)['messages']
     prompt_text = ""
     for message in messages:
       prompt_text += f"\n{message['sender'].title()}: {message['text']}\n"
+
     prompt_process_object = PromptsModel.objects.create(
       user=user.data.uuid,
       prompt=prompt_text

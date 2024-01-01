@@ -5,61 +5,70 @@ import websocket
 import threading
 from sys import argv
 from uuid import uuid4
-from .models import language, speech
-
-worker_uid = (secrets.token_urlsafe(16) + str(uuid4())).replace('-', '')
-server_adr, ssl_enabled = f"localhost:8995", False
-server_socket_url = lambda uri_path='': f"wss://{server_adr}{uri_path}" if ssl_enabled else \
-  f"ws://{server_adr}{uri_path}"
-server_request_url = lambda uri_path='': f"https://{server_adr}{uri_path}" if ssl_enabled else \
-  f"http://{server_adr}{uri_path}"
+from models.language import LanguageProcessor
 
 
-def on_error(ws:object, error:str) -> None:
-  print(f"Socket Error Occurred: {error}")
+class WorkerNode():
+  worker_uid = (secrets.token_urlsafe(16) + str(uuid4())).replace('-', '')
+  server_adr = "localhost:8995"
+  ssl_enabled = False
+  debug = True
 
-
-def on_close(ws:object, close_status_code:int, close_msg:str) -> None:
-  print(f"Socket Connection closed: {close_msg}")
-
-
-def on_message(ws, message) -> None:
-  data = json.loads(message)
-  thread = threading.Thread(
-    target=generate_prompt_response,
-    name=f"prompt-processor-{data['uuid']}",
-    args=(
-      data['uuid'],
-      data['prompt']
+  def __init__(self, debug=True) -> None:
+    self.debug = debug
+    if not debug:
+      self.server_adr = "dexter.easter.company"
+      self.ssl_enabled = True
+    websocket.enableTrace(debug)
+    self.socket = websocket.WebSocketApp(
+      url=self.server_socket_uri(f"/api/ws/dexter/processor?clientId={self.worker_uid}"),
+      on_error=self.on_error,
+      on_close=self.on_close,
+      on_message=self.on_message
     )
-  )
-  thread.daemon = False
-  thread.start()
+    self.socket.run_forever(reconnect=1 if debug else 10)
 
+  def server_socket_uri(self, path='') -> str:
+    return f"wss://{self.server_adr}{path}" if self.ssl_enabled else f"ws://{self.server_adr}{path}"
 
-def generate_prompt_response(prompt_uuid:str, prompt_message:str) -> str:
-  requests.get(
-    url=server_request_url(f"/api/dexter/processor/response?clientId={worker_uid}"),
-    headers={
-      'Content-Type': 'application/json'
-    },
-    data=json.dumps({
-      "prompt": prompt_uuid,
-      "response": language.prompt(prompt_message),
-      "processor": worker_uid
-    }).encode("utf-8")
-  )
+  def server_request_uri(self, path='') -> str:
+    return f"https://{self.server_adr}{path}" if self.ssl_enabled else f"http://{self.server_adr}{path}"
+
+  def on_error(self, ws:object, error:str) -> None:
+    if self.debug:
+      print(f"Socket Error Occurred: {error}")
+
+  def on_close(self, ws:object, close_status_code:int, close_msg:str) -> None:
+    if self.debug:
+      print(f"Socket Connection closed: {close_msg}")
+
+  def on_message(self, ws, message) -> None:
+    data = json.loads(message)
+    thread = threading.Thread(
+      target=self.generate_prompt_response,
+      name=f"prompt-process-{data['uuid']}",
+      args=(
+        data['uuid'],
+        data['prompt']
+      )
+    )
+    thread.daemon = False
+    thread.start()
+
+  def generate_prompt_response(self, prompt_uuid:str, prompt_message:str) -> str:
+    requests.get(
+      url=self.server_request_uri(f"/api/dexter/processor/response?clientId={self.worker_uid}"),
+      headers={
+        'Content-Type': 'application/json'
+      },
+      data=json.dumps({
+        "prompt": prompt_uuid,
+        "response": LanguageProcessor(model='base').prompt(prompt_message),
+        "processor": self.worker_uid
+      }).encode("utf-8")
+    )
 
 
 if __name__ == "__main__":
-  production_worker = '-prd' in argv
-  if production_worker:
-    server_adr, ssl_enabled = f"dexter.easter.company", False
-  websocket.enableTrace(not production_worker)
-  socket = websocket.WebSocketApp(
-    url=server_socket_url(f"/api/ws/dexter/processor?clientId={worker_uid}"),
-    on_error=on_error,
-    on_close=on_close,
-    on_message=on_message
-  )
-  socket.run_forever(reconnect=10 if production_worker else 1)
+  debug = '-prd' not in argv
+  node = WorkerNode(debug=debug)

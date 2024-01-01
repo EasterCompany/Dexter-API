@@ -20,8 +20,8 @@ class SpeechRecognition():
     self.active_model = self.models[model]
     self.model = whisper.load_model(self.active_model)
 
-  def transcribe(self, audio_file_path:str) -> str:
-    transcription_data = self.model.transcribe(audio_file_path, fp16=self.gpu_enabled)
+  def transcribe(self, audio_file:str) -> str:
+    transcription_data = self.model.transcribe(audio_file, fp16=self.gpu_enabled)
     transcription_text = transcription_data['text'].strip()
     return transcription_text
 
