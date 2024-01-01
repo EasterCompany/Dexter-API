@@ -8,7 +8,7 @@ from uuid import uuid4
 from .models import language, speech
 
 worker_uid = (secrets.token_urlsafe(16) + str(uuid4())).replace('-', '')
-server_adr, ssl_enabled = f"dexter.easter.company", True
+server_adr, ssl_enabled = f"localhost:8995", False
 server_socket_url = lambda uri_path='': f"wss://{server_adr}{uri_path}" if ssl_enabled else \
   f"ws://{server_adr}{uri_path}"
 server_request_url = lambda uri_path='': f"https://{server_adr}{uri_path}" if ssl_enabled else \
@@ -53,7 +53,9 @@ def generate_prompt_response(prompt_uuid:str, prompt_message:str) -> str:
 
 if __name__ == "__main__":
   production_worker = '-prd' in argv
-  websocket.enableTrace(production_worker)
+  if production_worker:
+    server_adr, ssl_enabled = f"dexter.easter.company", False
+  websocket.enableTrace(not production_worker)
   socket = websocket.WebSocketApp(
     url=server_socket_url(f"/api/ws/dexter/processor?clientId={worker_uid}"),
     on_error=on_error,
