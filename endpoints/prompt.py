@@ -17,7 +17,7 @@ def create_new_prompt_process(req, *args, **kwargs):
     messages = api.get_json(req)['messages']
     prompt_text = ""
     for message in messages:
-      prompt_text += f"\n{message['sender'].title()}: {message['text']}\n"
+      prompt_text += f"\n{message['sender'].title()}: {message['content']}\n"
 
     prompt_process_object = PromptsModel.objects.create(
       user=user.data.uuid,

@@ -1,4 +1,5 @@
 from ..tables import PromptsModel
+from web.settings import DEBUG
 from core.library import (
   api,
   time,
@@ -30,22 +31,21 @@ class ProcessorConsumer(AsyncJsonWebsocketConsumer):
   async def connect(self, *args, **kwargs):
     self.query_params = dict(parse_qsl(self.scope['query_string'].decode('utf-8')))
     self.processor_id = self.query_params['clientId']
-    print(f"\nConnecting Processor: {self.processor_id[:16]}...\n")
+    if DEBUG:
+      print(f"\nConnecting Processor: {self.processor_id[:16]}...\n")
     await self.accept()
     await self.scan_records_periodically()
 
   def websocket_disconnect(self, message):
-    print(f"\nDisconnecting Processor: {self.processor_id[:16]}...\n")
+    if DEBUG:
+      print(f"\nDisconnecting Processor: {self.processor_id[:16]}...\n")
     self.undesignated_processes()
     self.close()
 
   async def send_json(self, content, close=False):
-    print(f"\nSending: {content}\n")
+    if DEBUG:
+      print(f"\nSending: {content}\n")
     await super().send(text_data=await self.encode_json(content), close=close)
-
-  async def receive_json(self, content):
-    print(f"\nReceiving: {content}\n")
-    super().receive_json()
 
   async def scan_records_periodically(self, *args, **kwargs):
     while True:
