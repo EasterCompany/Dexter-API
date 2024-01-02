@@ -18,8 +18,3 @@ def transcribe_audio(req, *args, **kwargs):
     return api.data(transcription)
   except Exception as exception:
     return api.error(exception)
-
-
-def convert_webm_to_flac(input_file, output_file):
-    command = ['ffmpeg', '-i', input_file, '-vn', '-c:a', 'flac', output_file]
-    subprocess.run(command, check=True)

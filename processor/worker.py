@@ -10,7 +10,7 @@ from models.language import LanguageProcessor
 
 class WorkerNode():
   worker_uid = (secrets.token_urlsafe(16) + str(uuid4())).replace('-', '')
-  server_adr = "localhost:8995"
+  server_adr = "127.0.0.1:8995"
   ssl_enabled = False
   debug = True
 
