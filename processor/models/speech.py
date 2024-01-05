@@ -16,7 +16,7 @@ class SpeechRecognition():
     'small': f"{model_directory}/small.en.pt"
   }
 
-  def __init__(self, model:str='tiny') -> None:
+  def __init__(self, model:str='base') -> None:
     self.active_model = self.models[model]
     self.model = whisper.load_model(self.active_model)
 

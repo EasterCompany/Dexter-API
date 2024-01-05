@@ -12,7 +12,7 @@ def transcribe_audio(req, *args, **kwargs):
     data = req.FILES['file']
     tmp_data_name = f'{uuid()}{data.name}'
     FileSystemStorage(location='/tmp').save(tmp_data_name, data)
-    engine = SpeechRecognition(model='base')
+    engine = SpeechRecognition()
     transcription = engine.transcribe(f'/tmp/{tmp_data_name}')
 
     return api.data(transcription)
