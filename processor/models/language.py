@@ -7,13 +7,14 @@ class LanguageProcessor():
   model_server = "http://127.0.0.1:11434"
   active_model = None
   models = {
-    'nano': 'phi:latest',
     'tiny': 'tinyllama:latest',
+    'micro': 'phi:latest',
     'base': 'mistral:latest',
-    'small': 'mixtral:latest'
+    'small': 'mixtral:latest',
+    'medium': 'dolphin-mixtral:latest'
   }
 
-  def __init__(self, model:str='base') -> None:
+  def __init__(self, model:str='micro') -> None:
     self.active_model = self.models[model]
     self.model = Ollama(
       base_url=self.model_server,
@@ -30,7 +31,7 @@ class LanguageProcessor():
 
 
 if __name__ == '__main__':
-  engine = LanguageProcessor(model='base')
+  engine = LanguageProcessor()
   prompt = "Hello, who are you and what do you do?"
   print(f"Sending prompt '{prompt}'")
   t0 = time.time()

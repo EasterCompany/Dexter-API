@@ -27,7 +27,7 @@ class SpeechRecognition():
 
 
 if __name__ == '__main__':
-  engine = SpeechRecognition(model='tiny')
+  engine = SpeechRecognition()
   test_file_dir = f"{engine.model_directory}/tests"
   test_files = os.scandir(test_file_dir)
   for index, test_file in enumerate(test_files):

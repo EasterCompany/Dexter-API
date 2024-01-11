@@ -7,6 +7,8 @@ from sys import argv
 from uuid import uuid4
 from models.language import LanguageProcessor
 
+language_model = LanguageProcessor(model='base')
+
 
 class WorkerNode():
   worker_uid = (secrets.token_urlsafe(16) + str(uuid4())).replace('-', '')
@@ -63,7 +65,7 @@ class WorkerNode():
       },
       data=json.dumps({
         "prompt": prompt_uuid,
-        "response": LanguageProcessor(model='base').prompt(prompt_message),
+        "response": language_model.prompt(prompt_message),
         "processor": self.worker_uid
       }).encode("utf-8")
     )
