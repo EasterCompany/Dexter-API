@@ -1,13 +1,23 @@
 import json
+import redis
 import secrets
 import requests
 import websocket
 import threading
 from sys import argv
 from uuid import uuid4
+from models.action import ActionProcessor
 from models.language import LanguageProcessor
 
-language_model = LanguageProcessor(model='base')
+action_model = ActionProcessor()
+language_model = LanguageProcessor()
+REDIS_HOST = "localhost"
+REDIS_PORT = "6379"
+REDIS_DB = redis.Redis(
+  host=REDIS_HOST,
+  port=REDIS_PORT,
+  decode_responses=True
+)
 
 
 class WorkerNode():
@@ -51,13 +61,28 @@ class WorkerNode():
       name=f"prompt-process-{data['uuid']}",
       args=(
         data['uuid'],
-        data['prompt']
+        data['prompt'],
+        data['potential_cta']
       )
     )
     thread.daemon = False
     thread.start()
 
-  def generate_prompt_response(self, prompt_uuid:str, prompt_message:str) -> str:
+  def run_models(self, prompt_message:str, potential_cta:str) -> str:
+    action_model_response = action_model.prompt(tokens=potential_cta)
+    if action_model_response is not None and 'result' in action_model_response:
+      return action_model_response['result']
+    return language_model.prompt(tokens=prompt_message)
+
+  def generate_prompt_response(self, prompt_uuid:str, prompt_message:str, potential_cta:str) -> str:
+    if self.debug:
+      prompt_response = self.run_models(prompt_message, potential_cta)
+    else:
+      try:
+        prompt_response = self.run_models(prompt_message, potential_cta)
+      except Exception as exception:
+        prompt_response = f"Sorry, I encountered an error while processing your request: {exception}"
+
     requests.get(
       url=self.server_request_uri(f"/api/dexter/processor/response?clientId={self.worker_uid}"),
       headers={
@@ -65,7 +90,7 @@ class WorkerNode():
       },
       data=json.dumps({
         "prompt": prompt_uuid,
-        "response": language_model.prompt(prompt_message),
+        "response": prompt_response,
         "processor": self.worker_uid
       }).encode("utf-8")
     )

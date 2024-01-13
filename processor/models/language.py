@@ -1,6 +1,6 @@
 import time
 from langchain.llms import Ollama
-from .contexts.dexter import context
+from .contexts.language import context
 
 
 class LanguageProcessor():
@@ -14,7 +14,7 @@ class LanguageProcessor():
     'medium': 'dolphin-mixtral:latest'
   }
 
-  def __init__(self, model:str='micro') -> None:
+  def __init__(self, model:str='base') -> None:
     self.active_model = self.models[model]
     self.model = Ollama(
       base_url=self.model_server,
@@ -27,15 +27,6 @@ class LanguageProcessor():
     response = self.model(token_context).strip()
     if response.startswith('Dexter:'):
       response = "Dexter:".join(response.split("Dexter:")[1:])
+    if response.startswith('Dex:'):
+      response = "Dex:".join(response.split("Dex:")[1:])
     return response
-
-
-if __name__ == '__main__':
-  engine = LanguageProcessor()
-  prompt = "Hello, who are you and what do you do?"
-  print(f"Sending prompt '{prompt}'")
-  t0 = time.time()
-  response = engine.prompt(tokens=f"User: {prompt}")
-  t1 = time.time() - t0
-  print(f"Received response '{response}'")
-  print(f"Time taken: {t1}")

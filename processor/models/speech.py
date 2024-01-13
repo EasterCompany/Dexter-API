@@ -24,16 +24,3 @@ class SpeechRecognition():
     transcription_data = self.model.transcribe(audio_file, fp16=self.gpu_enabled)
     transcription_text = transcription_data['text'].strip()
     return transcription_text
-
-
-if __name__ == '__main__':
-  engine = SpeechRecognition()
-  test_file_dir = f"{engine.model_directory}/tests"
-  test_files = os.scandir(test_file_dir)
-  for index, test_file in enumerate(test_files):
-    if not test_file.is_file():
-      continue
-    t0 = time.time()
-    print(f"\nTest File [{test_file.name}]")
-    print(engine.transcribe(f"{test_file_dir}/{test_file.name}"))
-    print("Time Spent: ", time.time() - t0, "\n")

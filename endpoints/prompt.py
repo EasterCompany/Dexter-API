@@ -21,7 +21,8 @@ def create_new_prompt_process(req, *args, **kwargs):
 
     prompt_process_object = PromptsModel.objects.create(
       user=user.data.uuid,
-      prompt=prompt_text
+      prompt=prompt_text,
+      potential_cta=messages[-1]['content']
     )
     return api.data(prompt_process_object.uuid)
   except Exception as exception:

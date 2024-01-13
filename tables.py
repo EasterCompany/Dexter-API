@@ -20,6 +20,10 @@ class PromptsModel(models.Model):
     null=False,
     blank=False
   )
+  potential_cta = models.TextField(
+    null=False,
+    blank=False
+  )
   response = models.TextField(
     null=True,
     blank=True

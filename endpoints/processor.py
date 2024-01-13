@@ -76,7 +76,8 @@ class ProcessorConsumer(AsyncJsonWebsocketConsumer):
 
     worker_payload = {
       "uuid": process.uuid,
-      "prompt": process.prompt
+      "prompt": process.prompt,
+      "potential_cta": process.potential_cta
     }
     return worker_payload
 
