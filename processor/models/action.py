@@ -38,7 +38,8 @@ def detect_action_from_prompt(prompt:str) -> dict:
     # Check for at least 1 inclusion (and remove them from pas)
     if 'inclusions' in action:
       _inclusions = []
-      action['inclusions'] = action['inclusions']()
+      if callable(action['inclusions']):
+        action['inclusions'] = action['inclusions']()
 
       for inclusion in action['inclusions']:
         if inclusion.lower() in pas:
@@ -51,7 +52,8 @@ def detect_action_from_prompt(prompt:str) -> dict:
 
     # Remove excluded words from pas
     if 'exclusions' in action:
-      action['exclusions'] = action['exclusions']()
+      if callable(action['exclusions']):
+        action['exclusions'] = action['exclusions']()
       for exclusion in action['exclusions']:
         pas = pas.replace(' ' + exclusion + ' ', ' ')
 
