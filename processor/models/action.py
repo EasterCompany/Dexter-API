@@ -76,7 +76,6 @@ def detect_action_from_prompt(prompt:str) -> dict:
   return action_response
 
 
-@njit
 def cleanse_user_input(user_input:str) -> str:
   s = user_input.strip().lower()
   for punctuation in string.punctuation:
@@ -87,7 +86,6 @@ def cleanse_user_input(user_input:str) -> str:
   return s
 
 
-@njit
 def calculate_similarity(str1, str2) -> float:
   set1 = set(str1.split(' '))
   set2 = set(str2.split(' '))
