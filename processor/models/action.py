@@ -1,5 +1,5 @@
 import string
-from numba import jit, njit
+from numba import njit
 from .actions import iot_commands
 
 
@@ -24,7 +24,6 @@ class ActionProcessor():
     return None
 
 
-@jit(nopython=False)
 def detect_action_from_prompt(prompt:str) -> dict:
   action_response = {}
 
