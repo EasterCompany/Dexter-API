@@ -1,5 +1,4 @@
-import time
-from langchain.llms import Ollama
+from langchain_community.llms import Ollama
 from .contexts.language import context
 
 

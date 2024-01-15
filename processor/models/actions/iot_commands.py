@@ -3,7 +3,7 @@ from models.data.language.english_lists import generics
 
 command_dict = {
   "scan_network_for_devices": {
-    "exclusions": generics + [
+    "exclusions": lambda: generics + [
       'smart',
       'iot',
       'for',
@@ -32,7 +32,9 @@ command_dict = {
 
   "set_iot_device_power_state_on": {
     "inclusions": lambda: kasa.get_all_callable_iot_device_names(),
-    "exclusions": lambda: [x for x in generics if x != 'on'] + kasa.get_all_callable_iot_device_names() + [ 'my' ],
+    "exclusions": lambda: [x for x in generics if x != 'on'] + kasa.get_all_callable_iot_device_names() + [
+      'my', 'your', 'our'
+    ],
     "key_phrase": 'on',
     "alt_phrases": [
       'up',
@@ -48,7 +50,9 @@ command_dict = {
 
   "set_iot_device_power_state_off": {
     "inclusions": lambda: kasa.get_all_callable_iot_device_names(),
-    "exclusions": lambda: [x for x in generics if x != 'on'] + kasa.get_all_callable_iot_device_names() + [ 'my' ],
+    "exclusions": lambda: [x for x in generics if x != 'off'] + kasa.get_all_callable_iot_device_names() + [
+      'my', 'your', 'our'
+    ],
     "key_phrase": 'off',
     "alt_phrases": [
       'down',

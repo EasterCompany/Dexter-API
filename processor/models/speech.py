@@ -1,5 +1,3 @@
-import os
-import time
 import torch
 import whisper
 from pathlib import Path

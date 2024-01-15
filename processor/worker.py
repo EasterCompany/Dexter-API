@@ -22,7 +22,7 @@ REDIS_DB = redis.Redis(
 
 class WorkerNode():
   worker_uid = (secrets.token_urlsafe(16) + str(uuid4())).replace('-', '')
-  server_adr = "127.0.0.1:8995"
+  server_adr = "127.0.0.1:8999"
   ssl_enabled = False
   debug = True
 
@@ -81,7 +81,9 @@ class WorkerNode():
       try:
         prompt_response = self.run_models(prompt_message, potential_cta)
       except Exception as exception:
-        prompt_response = f"Sorry, I encountered an error while processing your request: {exception}"
+        prompt_response = f"Sorry, I encountered an error while processing your request:\n\n" +\
+          f"""```\n{exception}\n```\n\n""" +\
+          f"You might consider sending this error message to [contact@easter.company](mailto:contact@easter.company)"
 
     requests.get(
       url=self.server_request_uri(f"/api/dexter/processor/response?clientId={self.worker_uid}"),
@@ -97,5 +99,5 @@ class WorkerNode():
 
 
 if __name__ == "__main__":
-  debug = '-prd' not in argv
+  debug = 'local' in argv
   node = WorkerNode(debug=debug)
