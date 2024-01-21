@@ -39,11 +39,17 @@ class WorkerNode():
       on_open=self.on_open,
       on_error=self.on_error,
       on_close=self.on_close,
-      on_message=self.on_message
+      on_message=self.on_message,
+      keep_running=True
     )
     while True:
       if not self.connection_open:
-        self.socket.run_forever(reconnect=1 if debug else 3)
+        try:
+          self.socket.close()
+          self.socket.run_forever(reconnect=1 if debug else 3)
+        except Exception as exception:
+          print(exception)
+          time.sleep(2)
       time.sleep(1)
 
   def server_socket_uri(self, path='') -> str:
