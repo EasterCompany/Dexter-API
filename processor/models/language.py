@@ -44,8 +44,6 @@ class LanguageProcessor():
     self.size = model
     self.meta = self.models[model]
     if self.meta['type'] == 'ollama':
-      system("curl https://ollama.ai/install.sh | sh")
-      system(f"ollama pull {self.meta['label']}")
       self.model = Ollama(
         base_url=self.model_server,
         model=self.meta['label']
