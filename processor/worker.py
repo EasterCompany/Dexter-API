@@ -1,3 +1,4 @@
+import time
 import json
 import redis
 import secrets
@@ -28,17 +29,28 @@ class WorkerNode():
 
   def __init__(self, debug=True) -> None:
     self.debug = debug
+    self.connection_open = False
     if not debug:
       self.server_adr = "dexter.easter.company"
       self.ssl_enabled = True
     websocket.enableTrace(debug)
     self.socket = websocket.WebSocketApp(
       url=self.server_socket_uri(f"/api/ws/dexter/processor?clientId={self.worker_uid}"),
+      on_open=self.on_open,
       on_error=self.on_error,
       on_close=self.on_close,
-      on_message=self.on_message
+      on_message=self.on_message,
+      keep_running=True
     )
-    self.socket.run_forever(reconnect=1 if debug else 10)
+    while True:
+      if not self.connection_open:
+        try:
+          self.socket.close()
+          self.socket.run_forever(reconnect=1 if debug else 3)
+        except Exception as exception:
+          print(exception)
+          time.sleep(2)
+      time.sleep(1)
 
   def server_socket_uri(self, path='') -> str:
     return f"wss://{self.server_adr}{path}" if self.ssl_enabled else f"ws://{self.server_adr}{path}"
@@ -46,13 +58,19 @@ class WorkerNode():
   def server_request_uri(self, path='') -> str:
     return f"https://{self.server_adr}{path}" if self.ssl_enabled else f"http://{self.server_adr}{path}"
 
+  def on_open(self, ws:object) -> None:
+    if self.debug:
+      print(f"Socket Connection Opened.")
+    self.connection_open = True
+
   def on_error(self, ws:object, error:str) -> None:
     if self.debug:
-      print(f"Socket Error Occurred: {error}")
+      print(f"Socket Connection Error: {error}")
 
   def on_close(self, ws:object, close_status_code:int, close_msg:str) -> None:
     if self.debug:
-      print(f"Socket Connection closed: {close_msg}")
+      print(f"Socket Connection Closed: {close_msg}")
+    self.connection_open = False
 
   def on_message(self, ws, message) -> None:
     data = json.loads(message)

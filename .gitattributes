@@ -1,1 +1,5 @@
+# Audio Model Data
 *.pt filter=lfs diff=lfs merge=lfs -text
+
+# Language Model Data
+*.gguf filter=lfs diff=lfs merge=lfs -text

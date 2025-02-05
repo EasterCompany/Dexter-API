@@ -1,3 +1,8 @@
 # Python
 __pycache__
+
+# Audio Model Data
 *.pt
+
+# Language Model Data
+*.gguf
