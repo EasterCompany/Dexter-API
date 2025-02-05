@@ -36,7 +36,7 @@ class ProcessorConsumer(AsyncJsonWebsocketConsumer):
     await self.accept()
     await self.scan_records_periodically()
 
-  def websocket_disconnect(self, message):
+  def disconnect(self, message):
     if DEBUG:
       print(f"\nDisconnecting Processor: {self.processor_id[:16]}...\n")
     self.undesignated_processes()
